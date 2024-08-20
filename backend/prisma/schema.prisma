@@ -1,0 +1,129 @@
+datasource db {
+  provider = "mysql" // atau mysql, sqlite sesuai kebutuhan
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  password   String
+  role       Role     @default(CONSUMER)
+  verification_code String? 
+  emailVerified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relasi
+  partnerships  Partnership[]
+  retailOrders  RetailOrder[] // Tambahkan ini jika ingin relasi dari User ke RetailOrder
+  preOrders     PreOrder[]
+  cartItems            CartItem[]
+  verificationTokens VerificationToken[]
+  resetPasswordTokens ResetPasswordToken[]
+}
+
+model CartItem {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  productName String?
+  productId   Int
+  quantity    Int      // Jumlah produk dalam keranjang
+  price  Float    // Total harga untuk jumlah produk ini
+  image String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relasi
+  user        User     @relation(fields: [userId], references: [id])
+  product     Product  @relation(fields: [productId], references: [id])
+}
+
+model RetailOrder {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  productId  Int
+  quantity   Int      // Jumlah dalam kg
+  totalPrice Float
+  orderDate  DateTime @default(now())
+
+  // Relasi
+  user     User    @relation(fields: [userId], references: [id])
+  product  Product @relation(fields: [productId], references: [id])
+}
+
+model PreOrder {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  productId     Int
+  quantity      Int      // Jumlah dalam kg
+  totalPrice    Float
+  deliveryDate  DateTime // Tanggal pengiriman yang diinginkan
+  orderDate     DateTime @default(now())
+
+  // Relasi
+  user     User    @relation(fields: [userId], references: [id])
+  product  Product @relation(fields: [productId], references: [id])
+}
+
+model Product {
+  id            Int       @id @default(autoincrement())
+  name          String
+  description   String
+  price         Float
+  image         String?
+  weight        Float     // Berat per satuan (kg)
+  catchDate     DateTime? // Tanggal penangkapan, untuk ikan segar
+  isProcessed   Boolean   // Menunjukkan apakah produk ini adalah produk olahan
+  processType   String?   // Jenis pengolahan: Asin, Kering, Asap, dll
+  stock         Int       // Jumlah stok yang tersedia
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relasi
+  retailOrders  RetailOrder[]
+  preOrders     PreOrder[]
+  cartItems     CartItem[]
+}
+
+model Partnership {
+  id           Int      @id @default(autoincrement())
+  companyName  String
+  userId       Int      @unique
+  startDate    DateTime @default(now()) //Tanggal mulai kerjasama
+  endDate      DateTime?  //Tanggal Akhir Kerjasama
+
+  // Relasi
+  user     User  @relation(fields: [userId], references: [id])
+}
+
+model VerificationToken {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  token         String   @unique
+  expiresAt     DateTime
+  isVerified    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  // Relasi
+  user          User     @relation(fields: [userId], references: [id])
+}
+
+model ResetPasswordToken {
+  id           Int @id @default (autoincrement())
+  token        String   @unique
+  expiresAt    DateTime
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+enum Role {
+  CONSUMER
+  PARTNER
+  ADMIN
+}

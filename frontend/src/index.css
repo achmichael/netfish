@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Customize scrollbar for Webkit browsers */
+/* ::-webkit-scrollbar {
+  height: 8px; 
+} */
+
+/* ::-webkit-scrollbar-thumb {
+  background-color: #888; 
+  border-radius: 10px; 
+} */
+
+/* ::-webkit-scrollbar-track {
+  background-color: #f1f1f1; 
+} */
+
+/* ::-webkit-scrollbar-thumb:hover {
+  background-color: #555; 
+} */
+
+.container {
+  overflow-x: scroll;
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: transparent transparent;
+}
+
+.container::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.container::-webkit-scrollbar-thumb {
+  background: transparent;
+}
