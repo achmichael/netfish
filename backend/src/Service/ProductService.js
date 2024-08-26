@@ -24,13 +24,13 @@ class ProductService {
     const newProduct = new Product(
       name,
       description,
-      price,
+      parseFloat(price),
       image,
-      weight,
+      parseFloat(weight),
       catchDate,
       isProcessed,
       processType,
-      stock
+      parseFloat(stock)
     );
 
     return await this.productRepository.createProduct(newProduct);

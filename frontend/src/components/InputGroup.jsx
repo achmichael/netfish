@@ -11,9 +11,12 @@ const InputGroup = ({
   name,
   type,
   touched,
-  validateField
+  validateField,
 }) => {
-  const isValid = !error && value !== "" && touched && validateField(value);
+  const isValid =
+    !error && value !== "" && touched && validateField
+      ? validateField(value)
+      : "";
 
   const iconStyle = error
     ? "text-red-500"
@@ -47,6 +50,5 @@ const InputGroup = ({
     </div>
   );
 };
-
 
 export default InputGroup;

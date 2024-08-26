@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { addProductToCart } from "../api/cartItems.js";
 import Swal from "sweetalert2";
+import { success } from "../Config/Response.js";
 
-const ProductCard = ({ data }) => {
+const ProductCard = ({ data, isPartner }) => {
   const [quantity, setQuantity] = useState(1);
 
   const handleQuantityChange = (e) => {
@@ -15,23 +16,41 @@ const ProductCard = ({ data }) => {
 
   const handleAddToCart = async () => {
     try {
-      const token = localStorage.getItem("token");
-      await addProductToCart(
-        {
-          productName: data.name,
-          productId: data.id,
-          quantity: quantity,
-          price: data.price,
-          image: data.image,
-        },
-        token
-      );
-      Swal.fire({
-        title: "Sukses!",
-        text: "Produk berhasil ditambahkan ke keranjang.",
-        icon: "success",
-        confirmButtonText: "Okay",
-      });
+      const credential = JSON.parse(localStorage.getItem("data"));
+      const token = credential.token;
+      const role = credential.role;
+
+      if (role !== "CONSUMER") {
+        Swal.fire({
+          title: "Oops!",
+          text: "Anda harus login sebagai pelanggan untuk menambahkan produk ke keranjang.",
+          icon: "error",
+          confirmButtonText: "Okay",
+        });
+        return;
+      }
+      try {
+        const result = await addProductToCart(
+          {
+            productName: data.name,
+            productId: data.id,
+            quantity: quantity,
+            price: data.price,
+            image: data.image,
+          },
+          token
+        );
+
+        if (result.success) {
+          success({
+            title: "Success",
+            message: result.message,
+            confirmButtonText: "Okay",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -39,7 +58,7 @@ const ProductCard = ({ data }) => {
 
   return (
     <motion.div
-      className="flex flex-col items-center p-4 rounded-lg shadow-lg bg-white w-60 h-[450px]"
+      className="flex flex-col items-center p-4 rounded-lg shadow-lg bg-white w-60 h-[500px]"
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 1.5 }}
@@ -55,7 +74,7 @@ const ProductCard = ({ data }) => {
       <h2 className="text-center font-bold text-lg mb-2 flex-grow">
         {data.name || "No name available"}
       </h2>
-      <p className="text-center text-gray-700 mb-2 text-sm line-clamp-3">
+      <p className="text-center text-gray-700 mb-2 text-sm line-clamp-4">
         {data.description || "No description available"}
       </p>
       <p className="text-center text-gray-600 mb-2">Rp {data.price}.000</p>
@@ -66,22 +85,26 @@ const ProductCard = ({ data }) => {
             ).toLocaleDateString()}`
           : "Tanggal Penangkapan tidak diketahui"}
       </p>
-      <div className="flex items-center mb-4">
-        <label className="mr-2 text-gray-600 font-semibold">Quantity:</label>
-        <input
-          type="number"
-          value={quantity}
-          onChange={handleQuantityChange}
-          className="w-16 text-center border rounded-md px-2 py-1 text-gray-700"
-          min="1"
-        />
-      </div>
-      <button
-        className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 transition duration-300"
-        onClick={handleAddToCart}
-      >
-        Add to Cart
-      </button>
+      {!isPartner && (
+        <div className="flex items-center mb-4">
+          <label className="mr-2 text-gray-600 font-semibold">Quantity:</label>
+          <input
+            type="number"
+            value={quantity}
+            onChange={handleQuantityChange}
+            className="w-16 text-center border rounded-md px-2 py-1 text-gray-700"
+            min="1"
+          />
+        </div>
+      )}
+      {!isPartner && (
+        <button
+          className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 transition duration-300 text-sm mr-1 max-w-[75%]"
+          onClick={handleAddToCart}
+        >
+          Add to Cart
+        </button>
+      )}
     </motion.div>
   );
 };

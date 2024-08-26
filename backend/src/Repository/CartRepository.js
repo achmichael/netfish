@@ -7,7 +7,7 @@ class CartRepository {
     });
   }
 
-  async getCartItemByUserAndProduct (userId, productId ) {
+  async getCartItemByUserAndProduct(userId, productId) {
     return await instance.getClient().cartItem.findFirst({
       where: {
         userId: parseInt(userId),
@@ -41,16 +41,15 @@ class CartRepository {
     });
   }
 
-  async deleteCartByProductId (productId)
-  {
+  async deleteCartByProductId(productId) {
     return await instance.getClient().cartItem.deleteMany({
       where: {
-        productId: parseInt(productId) 
-      }
-    })
+        productId: parseInt(productId),
+      },
+    });
   }
 
-  async deleteCartByUserAndProductId (userId, productId) {
+  async deleteCartByUserAndProductId(userId, productId) {
     return await instance.getClient().cartItem.delete({
       where: {
         userId: parseInt(userId),

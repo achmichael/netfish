@@ -11,18 +11,46 @@ import retailOrderRouter from "./Routes/RetailOrderRouter.js";
 import partnershipRouter from "./Routes/PartnershipRouter.js";
 import paymentRouter from "./Routes/PaymentRouter.js";
 import cartRouter from "./Routes/CartRouter.js";
+import cookieSession from "cookie-session";
+import helmet from "helmet";
+import cookieParser from 'cookie-parser';
+import imageRouter from "./Routes/ImageRouter.js";
 
 const app = express();
 const port = 3000;
 dotenv.config();
 
+app.use(helmet());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+app.use(
+  cookieSession({
+    name: "netfish.session",
+    keys: [process.env.SESSION_SECRET],
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  })
+);
+
+app.use(cookieParser());
 
 app.use(
   cors({
     origin: "http://localhost:5173",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true, // Mengizinkan pengiriman cookie bersama permintaan
+    optionsSuccessStatus: 200, // Untuk memastikan respons untuk preflight request tidak diblokir di beberapa browser
   })
 );
+
+// app.use(
+//   cors({
+//     origin: "*", // Mengizinkan semua origin (tidak disarankan untuk production)
+//   })
+// );
+
+// app.options("*", cors()); // Menangani preflight requests untuk semua routes
+
 
 app.get("/", (req, res) => {
   res.send("Welcome to Netfish API!");
@@ -32,9 +60,10 @@ app.use("/api", authRouter);
 app.use(
   "/api/products",
   AuthorizationMiddleware.accessValidation,
-  RoleMiddleware.authorizeRole("CONSUMER", "PARTNER"),
   productRouter
 );
+
+app.use('/api/uploads', imageRouter);
 
 app.use(
   "/api/pre-orders",

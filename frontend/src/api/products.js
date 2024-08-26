@@ -8,16 +8,18 @@ const products = async ( token ) => {
     }
   });
   const result = await response.json();
+
   if (!response.ok) {
     Swal.fire({
       title: "Error",
-      text: result.errors || 'Internal Server Error',
+      text: result.errors,
       icon: "error",
       confirmButtonText: "Try again",
     });
     return;
   }
   return result;
+
 };
 
 export default products;

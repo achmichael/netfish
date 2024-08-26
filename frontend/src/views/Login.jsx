@@ -4,9 +4,10 @@ import Form from "../components/Form.jsx";
 import Logo from "../assets/logo.jpg"; // Assuming you have a logo image
 import Header from "../components/Header.jsx";
 import Swal from "sweetalert2";
+import googleAuth from "../api/loginGoogle.js";
 import { useNavigate } from "react-router-dom";
+
 const Login = () => {
-  
   const navigate = useNavigate();
 
   const handleSubmit = async (data) => {
@@ -19,16 +20,20 @@ const Login = () => {
         confirmButtonText: "Lanjutkan",
       }).then((response) => {
         if (response.isConfirmed) {
-          localStorage.setItem('token', result.token);
+          localStorage.setItem("data", JSON.stringify(result.data));
           navigate("/dashboard");
         }
       });
     }
   };
 
-  const handleGoogleSuccess = (response) => {
-    const accessToken = response.credential;
-    localStorage.setItem("oauth_token", accessToken);
+  const handleGoogleSuccess = async (response) => {
+    const { credential } = response;
+    const result = await googleAuth(credential);
+    if (result.success) {
+      localStorage.setItem("data", JSON.stringify(result.data));
+      navigate("/dashboard");
+    }
   };
 
   const handleGoogleError = (error) => {
@@ -40,6 +45,7 @@ const Login = () => {
       footer: "Silakan coba lagi nanti.",
     });
   };
+
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-b from-primary to-secondary">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">

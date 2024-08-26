@@ -11,12 +11,13 @@ model User {
   id         Int      @id @default(autoincrement())
   name       String
   email      String   @unique
-  password   String
+  password   String?
   role       Role     @default(CONSUMER)
   verification_code String? 
   emailVerified Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  picture            String?
 
   // Relasi
   partnerships  Partnership[]
@@ -25,6 +26,22 @@ model User {
   cartItems            CartItem[]
   verificationTokens VerificationToken[]
   resetPasswordTokens ResetPasswordToken[]
+  googleAccounts        GoogleAccount?
+}
+
+model GoogleAccount {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  email       String
+  name        String   
+  googleId    String   @unique
+  picture     String
+  password    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relasi
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model CartItem {

@@ -8,9 +8,9 @@ import VerificationCode from "./VerificationCode.jsx";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import resendVerificationCode from "../api/verificationCode.js";
+import googleAuth from "../api/loginGoogle.js";
 
 const Register = () => {
-  
   const [success, setSuccess] = useState(false);
   const [isVerificationStep, setIsVerificationStep] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
@@ -51,7 +51,7 @@ const Register = () => {
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: result.message,
+        text: result.errors,
         footer: "Silakan coba lagi nanti.",
       });
     }
@@ -84,10 +84,21 @@ const Register = () => {
       }
     });
   };
-  
-  const handleGoogleSuccess = (response) => {
-    const accessToken = response.credential;
-    localStorage.setItem("oauth_token", accessToken);
+
+  const handleGoogleSuccess = async (response) => {
+    const { credential } = response;
+    const result = await googleAuth(credential);
+    if (result.success) {
+      setIsVerificationStep(true);
+      setUserEmail(result.data.email);
+    }else{
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Terjadi kesalahan saat register dengan akun google!",
+        footer: "Silakan coba lagi nanti.",
+      });
+    }
   };
 
   const handleGoogleError = (error) => {

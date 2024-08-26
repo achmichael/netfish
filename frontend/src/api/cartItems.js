@@ -1,4 +1,5 @@
 import Swal from "sweetalert2";
+import { error } from "../Config/Response.js";
 
 const getCartItems = async (data) => {
   const response = await fetch(
@@ -16,11 +17,13 @@ const getCartItems = async (data) => {
   if (!response.ok) {
     Swal.fire({
       title: "Error",
-      text: result.message,
+      text: result.errors,
       icon: "error",
     });
     return;
   }
+
+  
   return result;
 };
 
@@ -40,12 +43,7 @@ const addProductToCart = async (data, token) => {
   const result = await response.json();
 
   if (!response.ok) {
-    Swal.fire({
-      title: "Error",
-      text: result.message,
-      icon: "error",
-    });
-    return;
+    throw new Error(result.errors);
   }
 
   return result;
@@ -67,10 +65,10 @@ const updateCartItemsQuantity = async (data, token) => {
   const result = await response.json();
 
   if (!response.ok) {
-    Swal.fire({
+    error({
       title: "Error",
-      text: result.message,
-      icon: "error",
+      message: result.errors,
+      confirmButtonText: "Try again",
     });
     return;
   }
@@ -78,7 +76,7 @@ const updateCartItemsQuantity = async (data, token) => {
   return result;
 };
 
-const deleteCartItem = async (cart_id, productId ,token) => {
+const deleteCartItem = async (cart_id, productId, token) => {
   const response = await fetch(
     `${import.meta.env.VITE_URL_BACKEND}/api/users/cart/${cart_id}`,
     {
@@ -87,7 +85,7 @@ const deleteCartItem = async (cart_id, productId ,token) => {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({productId: productId})
+      body: JSON.stringify({ productId: productId }),
     }
   );
 
@@ -96,7 +94,7 @@ const deleteCartItem = async (cart_id, productId ,token) => {
   if (!response.ok) {
     Swal.fire({
       title: "Error",
-      text: result.message,
+      text: result.errors,
       icon: "error",
     });
     return;
@@ -105,4 +103,9 @@ const deleteCartItem = async (cart_id, productId ,token) => {
   return result;
 };
 
-export { getCartItems, addProductToCart, updateCartItemsQuantity, deleteCartItem };
+export {
+  getCartItems,
+  addProductToCart,
+  updateCartItemsQuantity,
+  deleteCartItem,
+};

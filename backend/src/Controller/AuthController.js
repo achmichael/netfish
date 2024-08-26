@@ -4,6 +4,12 @@ import crypto from "crypto";
 import SendMail from "../Utils/SendMail.js";
 import htmlContent from "../Utils/HtmlContent.js";
 import dotenv from "dotenv";
+import { OAuth2Client } from "google-auth-library";
+import instance from "../Config/Prisma.js";
+import jwt from "jsonwebtoken";
+import UserRepository from "../Repository/UserRepository.js";
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 dotenv.config();
 
 class AuthController {
@@ -44,7 +50,7 @@ class AuthController {
     const data = req.body;
 
     try {
-      await UserService.login(data);
+      const user = await UserService.login(data);
 
       const token = await AuthService.authenticate(
         req,
@@ -54,9 +60,13 @@ class AuthController {
 
       res.status(200).json({
         message: "Login successful",
-        token: token,
-        role: data.role,
         success: true,
+        data: {
+          token: token,
+          role: user.role,
+          email: data.email,
+          name: user.name,
+        },
       });
     } catch (error) {
       next(error);
@@ -93,7 +103,8 @@ class AuthController {
         });
       }
     } catch (error) {
-      next(error);A
+      next(error);
+      A;
     }
   };
 
@@ -106,6 +117,122 @@ class AuthController {
         message: "Reset password successfully",
       });
     } catch (error) {
+      next(error);
+    }
+  };
+
+  googleCallback = async (req, res, next) => {
+    const { token } = req.body;
+
+    const userRepository = new UserRepository();
+    if (!token) {
+      return next(new ResponseError(404, "Token not found"));
+    }
+
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+      const payload = ticket.getPayload();
+
+      const { sub, email, name, picture } = payload;
+
+      let user = await instance.getClient().googleAccount.findUnique({
+        where: { googleId: sub },
+      });
+
+      if (!user) {
+        // Jika pengguna tidak ada, lakukan registrasi pengguna baru
+        user = await instance.getClient().googleAccount.create({
+          data: {
+            googleId: sub,
+            email: email,
+            name: name,
+            picture: picture,
+            user: {
+              connectOrCreate: {
+                where: {
+                  email: email,
+                },
+                create: {
+                  name: name,
+                  email: email,
+                  picture: picture,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      const userEmail = await userRepository.getUserByEmail(email);
+
+      if (!userEmail) {
+        return next(new ResponseError(400, "User not registered"));
+      }
+      const domain = (req.secure ? "https" : "http") + "://" + req.headers.host;
+      const identity = {
+        iss: domain,
+        aud: domain,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 60 * 60,
+        data: {
+          user_id: user.id,
+          email: user.email,
+          role: userEmail.role,
+        },
+      };
+
+      const appToken = jwt.sign(identity, process.env.JWT_SECRET);
+
+      //mengirim token sebagai cookie
+      // res.cookie("token", appToken, {
+      //   httpOnly: true,
+      //   secure: process.env.NODE_ENV === "production",
+      //   sameSite: "Strict",
+      // });
+
+      // Kirim respons kembali ke frontend dengan token dan data pengguna
+      res.status(200).json({
+        success: true,
+        message: "Login successful",
+        data: {
+          token: appToken,
+          email: email,
+          name: name,
+          role: userEmail.role,
+          image: picture,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  };
+
+  logout = async (req, res, next) => {
+    try {
+      if (req.cookies) {
+        Object.keys(req.cookies).forEach((cookie) => {
+          if (typeof cookie === "string") {
+            console.log(`Menghapus cookie: ${cookie}`);
+            res.clearCookie(cookie);
+          } else {
+            console.warn(
+              `Tidak bisa menghapus cookie: Nama cookie bukan string`
+            );
+          }
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Logout successful",
+      });
+    } catch (error) {
+      console.log(error);
       next(error);
     }
   };

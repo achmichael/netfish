@@ -3,14 +3,20 @@ import ProductService from "../Service/ProductService.js";
 import ProductMiddleware from "../Middleware/ProductMiddleware.js";
 
 class ProductController {
+
   addProduct = async (req, res, next) => {
     const data = req.body;
     try {
       const newProduct = await ProductService.addProduct(data);
       res
         .status(201)
-        .json({ message: "Product added successfully", data: newProduct });
+        .json({
+          message: "Product added successfully",
+          data: newProduct,
+          success: true,
+        });
     } catch (error) {
+      console.log(error);
       next(error);
     }
   };
@@ -72,7 +78,7 @@ class ProductController {
       const data = await ProductService.getProducts();
       res
         .status(200)
-        .json({ message: "Fetched data products successfully", data: data });
+        .json({ message: "Fetched data products successfully", data: data, success: true });
     } catch (error) {
       next(error);
     }

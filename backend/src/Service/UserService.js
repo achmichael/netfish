@@ -45,7 +45,7 @@ class UserService {
       throw new ResponseError(401, "Email not verified");
     }
 
-    return true;
+    return checkUser;
   }
 
   async saveVerificationCode(userId, verificationCode) {

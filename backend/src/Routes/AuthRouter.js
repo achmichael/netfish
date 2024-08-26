@@ -2,6 +2,7 @@ import express from "express";
 import AuthMiddleware from "../Middleware/AuthMiddleware.js";
 import AuthController from "../Controller/AuthController.js";
 import EmailController from "../Controller/EmailController.js";
+
 const authRouter = express.Router();
 
 authRouter.post(
@@ -10,6 +11,7 @@ authRouter.post(
   AuthController.login
 );
 
+authRouter.post('/auth/google/callback', AuthController.googleCallback);
 authRouter.post(
   "/auth/verify-email",
   AuthMiddleware.emailVerificationMiddleware,
@@ -31,4 +33,5 @@ authRouter.post(
 authRouter.post('/forgot-password', AuthController.forgotPassword);
 authRouter.get('/reset-password', AuthMiddleware.resetTokenMiddleware, AuthController.resetToken);
 authRouter.post('/reset-password', AuthMiddleware.resetPasswordMiddleware, AuthController.resetPassword);
+authRouter.get('/logout', AuthController.logout);
 export default authRouter;

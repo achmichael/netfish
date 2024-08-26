@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  mode: 'jit',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -12,6 +13,9 @@ export default {
       },
       maxWidth: {
         '1/2': '50%',
+      },
+      screen: {
+        'mobile': '450px'
       }
     },
     fontFamily: {
