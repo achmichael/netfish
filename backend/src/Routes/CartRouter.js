@@ -8,6 +8,7 @@ cartRouter.post('/', CartMiddleware.validateAddToCart, CartController.addProduct
 cartRouter.get('/', CartController.getCartByUserId);
 cartRouter.get('/:cart_id', CartController.getCartByCartId);
 cartRouter.delete('/:cart_id', CartMiddleware.validateRemoveFromCart, CartController.deleteCartByCartId);
-cartRouter.put('/:cart_id', CartMiddleware.validateUpdateCartQuantity, CartController.updateCartItem);
+cartRouter.put('/quantity/:cart_id', CartMiddleware.validateUpdateCartQuantity, CartController.updateCartItem);
+cartRouter.put('/:cart_id', CartController.updateCartItem);
 
 export default cartRouter;

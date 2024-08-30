@@ -1,72 +1,44 @@
-import React, { useEffect } from "react";
-import payment from "../api/payment.js";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Cart = ({ items, onRemoveItem }) => {
-  useEffect(() => {
-    const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js";
-    const clientKey = import.meta.env.VITE_CLIENT_KEY;
-
-    const script = document.createElement("script");
-    script.src = snapScript;
-    script.setAttribute("data-client-key", clientKey);
-    script.async = true;
-
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
-
-  function generateOrderId() {
-    const characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let orderId = "";
-    const length = 10;
-
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      orderId += characters.charAt(randomIndex);
-    }
-
-    return orderId;
-  }
+  const [editingItem, setEditingItem] = useState(null);
+  const [checkedItems, setCheckedItems] = useState([]);
+  const navigate = useNavigate();
 
   const calculateTotalPrice = () => {
-    return items.reduce((total, item) => total + item.price * item.quantity, 0);
+    return items.reduce((total, item, index) => {
+      if (checkedItems[index]) {
+        return total + item.price * item.quantity;
+      }
+      return total;
+    }, 0);
   };
 
-  const handleCheckOut = async () => {
-    try {
-      const orderId = generateOrderId();
+  const handleCheckOut = () => {
+    const selectedItems = items.filter((item, index) => checkedItems[index]);
+    navigate("/checkout", { state: { selectedItems: selectedItems } });
+  };
 
-      const itemDetails = items.map((item) => ({
-        name: item.productName,
-        price: item.price,
-        quantity: item.quantity,
-        productId: item.productId,
-      }));
-
-      const data = {
-        orderId: orderId,
-        item_details: itemDetails,
-        gross_amount: calculateTotalPrice(),
-      };
-
-      const result = await payment(data);
-
-      if (result && result.token) {
-        window.snap.pay(result.token);
-      } else {
-        console.error("Token not received from payment function");
-      }
-    } catch (error) {
-      console.error("Error during checkout:", error);
+  const handleEditPesanan = (index, item) => {
+    if (editingItem === index) {
+      // setEditingItem(null);
+      window.location.href = `/dashboard#products?edit=${item.id}`;
+    } else {
+      setEditingItem(index);
     }
+  };
+
+  const handleCheckBoxChange = (index) => {
+    setCheckedItems((prevCheckedItems) => {
+      const newCheckedItems = [...prevCheckedItems]; // CheckedItems adalah array baru yang dibuat dengan menyalin semua elemen dari array prevCheckedItems
+      newCheckedItems[index] = !newCheckedItems[index]; // toggle checkbox status
+      return newCheckedItems;
+    });
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white shadow-lg rounded-lg mt-10 p-4">
-      <h2 className="text-2xl font-bold text-center mb-4">Shopping Cart</h2>
+    <div className="w-full bg-white shadow-lg rounded-lg mt-3 p-4">
       {items.length === 0 ? (
         <p className="text-center text-gray-600">Your cart is empty.</p>
       ) : (
@@ -78,8 +50,13 @@ const Cart = ({ items, onRemoveItem }) => {
                 className="flex items-center justify-between py-4"
               >
                 <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    onChange={() => handleCheckBoxChange(index)}
+                    checked={!!checkedItems[index]}
+                  />
                   <img
-                    className="w-16 h-16 object-cover rounded-lg"
+                    className="w-16 h-16 object-cover rounded-lg ml-4"
                     src={item.image || "https://via.placeholder.com/150"}
                     alt={item.name}
                   />
@@ -88,15 +65,33 @@ const Cart = ({ items, onRemoveItem }) => {
                       {item.productName}
                     </h3>
                     <p className="text-gray-500 text-sm">Rp {item.price}.000</p>
-                    <p className="text-gray-500 text-sm">Jumlah barang : {item.quantity}</p>
+                    <p className="text-gray-500 text-sm">
+                      Jumlah barang : {item.quantity}
+                    </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => onRemoveItem(item.id, index, item.productId)}
-                  className="text-red-500 hover:text-red-700 transition duration-300"
-                >
-                  Remove
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleEditPesanan(index, item)}
+                    className={`${
+                      editingItem === index
+                        ? "bg-primary transform -translate-x-5"
+                        : "bg-blue-500"
+                    } text-white rounded-xl px-5 py-2 transition duration-300 ${
+                      editingItem === index
+                        ? "hover:bg-green-600"
+                        : "hover:bg-blue-700"
+                    }`}
+                  >
+                    {editingItem === index ? "Ubah" : "Edit"}
+                  </button>
+                  <button
+                    onClick={() => onRemoveItem(item.id, index, item.productId)}
+                    className="text-white px-3 py-2 bg-red-500 rounded-xl hover:bg-red-700 transition duration-300"
+                  >
+                    Remove
+                  </button>
+                </div>
               </li>
             ))}
           </ul>

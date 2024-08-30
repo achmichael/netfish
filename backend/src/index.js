@@ -13,8 +13,9 @@ import paymentRouter from "./Routes/PaymentRouter.js";
 import cartRouter from "./Routes/CartRouter.js";
 import cookieSession from "cookie-session";
 import helmet from "helmet";
-import cookieParser from 'cookie-parser';
+import cookieParser from "cookie-parser";
 import imageRouter from "./Routes/ImageRouter.js";
+import userRouter from "./Routes/UserRouter.js";
 
 const app = express();
 const port = 3000;
@@ -51,19 +52,26 @@ app.use(
 
 // app.options("*", cors()); // Menangani preflight requests untuk semua routes
 
-
 app.get("/", (req, res) => {
   res.send("Welcome to Netfish API!");
 });
 
 app.use("/api", authRouter);
+
+app.use(
+  "/api/data/users",
+  AuthorizationMiddleware.accessValidation,
+  RoleMiddleware.authorizeRole("ADMIN"),
+  userRouter
+);
+
 app.use(
   "/api/products",
   AuthorizationMiddleware.accessValidation,
   productRouter
 );
 
-app.use('/api/uploads', imageRouter);
+app.use("/api/uploads", imageRouter);
 
 app.use(
   "/api/pre-orders",

@@ -24,6 +24,32 @@ class UserService {
     return await this.userRepository.createUser(user);
   }
 
+  async updateUser(userId, data) {
+    const { name, email, password, role } = data;
+
+    const checkUser = await this.userRepository.getUserById(userId);
+
+    if (!checkUser) {
+      throw new ResponseError(404, "User not found");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User(name, email, hashedPassword, role);
+
+    return await this.userRepository.updateUser(userId, user);
+  }
+  
+  async deleteUser(userId) {
+    const checkUser = await this.userRepository.getUserById(userId);
+
+    if (!checkUser) {
+      throw new ResponseError(404, "User not found");
+    }
+
+    return await this.userRepository.deleteUser(userId);
+  }
+
   async login(data) {
     const { email, password } = data;
 
@@ -99,6 +125,15 @@ class UserService {
     await this.userRepository.updatePasswordUser(user.id, hashedPassword);
     await this.userRepository.deleteResetPasswordToken(userToken.id);
   }
+
+  async getDatasUsers() {
+    return await this.userRepository.getDatasUsers();
+  }
+
+  async getDataUserById (userId){
+    return await this.userRepository.getUserById(userId);
+  }
+  
 }
 
 export default new UserService();

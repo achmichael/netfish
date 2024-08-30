@@ -2,10 +2,17 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 
-const PrivateRoute = ({ element: Component }) => {
-  const isAuthenticated = !!localStorage.getItem("data"); // Ganti dengan logika autentikasi Anda
+const PrivateRoute = ({ element: Component, roles = [] }) => {
 
-  return isAuthenticated ? Component : <Navigate to="/auth/login" />;
+  const userData = localStorage.getItem('data');
+
+  const user = userData ? JSON.parse(userData) : null;
+
+  const isAuthenticated = !!user;
+
+  const isAuthorize = roles.includes(user?.role);
+
+  return isAuthenticated && isAuthorize ? Component : <Navigate to={"/auth/login"}/>
 };
 
 export default PrivateRoute;

@@ -100,6 +100,10 @@ class UserRepository {
       },
     });
   }
+
+  async getDatasUsers () {
+    return await instance.getClient().user.findMany();
+  }
 }
 
 export default UserRepository;

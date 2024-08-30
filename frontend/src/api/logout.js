@@ -9,7 +9,7 @@ const logout = async () => {
   localStorage.clear();
 
   sessionStorage.clear();
-   
+    
   return response.json();
 };
 

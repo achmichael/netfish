@@ -21,7 +21,13 @@ const Login = () => {
       }).then((response) => {
         if (response.isConfirmed) {
           localStorage.setItem("data", JSON.stringify(result.data));
-          navigate("/dashboard");
+          if (result.data.role === 'CONSUMER'){
+            navigate("/dashboard");
+          }else if (result.data.role === 'PARTNER'){
+            navigate('/dashboard-partner');
+          }else if (result.data.role === "ADMIN"){
+            navigate('/dashboard-admin');
+          }
         }
       });
     }

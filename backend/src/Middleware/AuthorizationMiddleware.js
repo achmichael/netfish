@@ -2,16 +2,15 @@ import ResponseError from "../Config/Error.js";
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
+
 class AuthorizationMiddleware {
 
   accessValidation = (req, res, next) => {
 
     const token = this.extractToken(req.headers.authorization);
-
     if (!token) {
         return next(new ResponseError(401, "Unauthorized"));
     }
-
     try{
         const decoded = this.verifyToken(token, process.env.JWT_SECRET);
         req.user = decoded;
@@ -20,6 +19,7 @@ class AuthorizationMiddleware {
         next(error);
     }
   }
+
   extractToken = (authorization) => {
 
     if (!authorization) {

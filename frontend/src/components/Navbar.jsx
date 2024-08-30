@@ -90,7 +90,7 @@ const ListLink = ({ isLargeScreen }) => {
     <div className="list-link flex flex-col lg:flex-row items-center">
       {!isLargeScreen && <Profile />}
       <Links href={"/dashboard"} label={"Beranda"} />
-      <Links href={"/#about-us"} label={"Tentang Kami"} />
+      <Links href={"/#tentang-kami"} label={"Tentang Kami"} />
       <Links href={"/cart"} label={"Keranjang"} />
       <Links href={"#products"} label={"Belanja Yuk"} />
       <Links href={"#contact"} label={"Kontak"} />

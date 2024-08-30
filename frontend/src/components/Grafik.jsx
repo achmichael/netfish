@@ -12,22 +12,13 @@ import { Doughnut, Bar } from "react-chartjs-2";
 import products from "../api/products.js";
 import Loader from "./LazyLoader.jsx";
 
-// Mendaftarkan semua elemen dan skala yang diperlukan
-ChartJS.register(
-  ArcElement, // Untuk Doughnut chart
-  BarElement, // Untuk Bar chart
-  CategoryScale, // Untuk skala kategori (x-axis)
-  LinearScale, // Untuk skala linier (y-axis)
-  Tooltip, // Untuk tooltip
-  Legend // Untuk legenda
-);
+ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const Grafik = () => {
   const [dataProducts, setDataProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fungsi untuk menghasilkan warna dinamis
   const generateColors = (numColors) => {
     const colors = [
       "rgba(255, 99, 132, 0.2)",
@@ -74,7 +65,7 @@ const Grafik = () => {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 justify-between items-strech mt-5">
+    <div className="flex flex-col lg:flex-row gap-8 justify-center items-strech mt-8 mx-4 lg:mx-8" id="grafik">
       <CircleGrafik products={dataProducts} generateColors={generateColors} />
       <BarGrafik products={dataProducts} generateColors={generateColors} />
     </div>
@@ -101,19 +92,21 @@ const BarGrafik = ({ products, generateColors }) => {
     scales: {
       y: {
         beginAtZero: true,
-        max: 200, // Sesuaikan skala y
+        max: 200,
         ticks: {
-          stepSize: 20, // Atur jarak antar-tanda menjadi 20
+          stepSize: 20,
         },
       },
     },
-    maintainAspectRatio: false, // Membuat grafik lebih fleksibel
+    maintainAspectRatio: false,
   };
 
   return (
-    <div className="w-full lg:w-1/2 bg-white rounded-lg shadow-md p-5 lg:h-[610px] overflow-auto" id="chart-bar">
+    <div className="w-full lg:w-1/2 bg-white rounded-2xl shadow-xl p-5 lg:h-[500px] overflow-hidden transform transition duration-300 hover:scale-105">
       <h2 className="text-center text-lg font-semibold mb-4">Product Price</h2>
-      <Bar data={data} options={options}/>
+      <div className="relative flex flex-col items-center lg:flex-row justify-center w-full h-64 lg:h-[360px]">
+        <Bar data={data} options={options} />
+      </div>
     </div>
   );
 };
@@ -135,9 +128,11 @@ const CircleGrafik = ({ products, generateColors }) => {
   };
 
   return (
-    <div className="w-full lg:w-1/2 bg-white rounded-lg shadow-md p-5">
+    <div className="w-full lg:w-1/2 bg-white rounded-2xl shadow-xl p-5 transform transition duration-300 hover:scale-105">
       <h2 className="text-center text-lg font-semibold mb-4">Stock Chart</h2>
-      <Doughnut data={data} />
+      <div className="relative flex justify-center w-full h-64 lg:h-[360px]">
+        <Doughnut data={data} />
+      </div>
     </div>
   );
 };

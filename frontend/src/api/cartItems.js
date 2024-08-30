@@ -1,13 +1,12 @@
 import Swal from "sweetalert2";
 import { error } from "../Config/Response.js";
 
-const getCartItems = async (data) => {
+const getCartItems = async (token) => {
   const response = await fetch(
     `${import.meta.env.VITE_URL_BACKEND}/api/users/cart`,
     {
       headers: {
-        Authorization: `Bearer ${data.token}`,
-        "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`
       },
     }
   );

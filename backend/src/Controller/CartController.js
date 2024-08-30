@@ -25,9 +25,8 @@ class CartController {
       const cart = await CartService.getCartByUserId(req.user.data.user_id);
       res
         .status(200)
-        .json({ message: "Cart retrieved successfully", data: cart });
+        .json({ message: "Cart retrieved successfully", data: cart, success: true });
     } catch (error) {
-      console.log(error);
       next(error);
     }
   };
@@ -61,11 +60,11 @@ class CartController {
       const updatedItem = await CartService.updateCart(
         req.params.cart_id,
         req.body,
-        req.user.data.user_idC
+        req.user.data.user_id
       );
       res
         .status(200)
-        .json({ message: "Cart item updated successfully", data: updatedItem });
+        .json({ message: "Cart item updated successfully", data: updatedItem, success: true });
     } catch (error) {
       next(error);
     }
@@ -76,7 +75,7 @@ class CartController {
       const cart = await CartService.getCartById(req.params.cart_id);
       res
         .status(200)
-        .json({ message: "Cart retrieved successfully", data: cart });
+        .json({ message: "Cart retrieved successfully", data: cart, success: true });
     } catch (error) {
       next(error);
     }

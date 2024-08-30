@@ -36,8 +36,10 @@ class ProductController {
       res.status(200).json({
         message: "Product updated successfully",
         data: updatedProduct,
+        success: true
       });
     } catch (error) {
+      console.log(error);
       next(error);
     }
   };
@@ -50,7 +52,7 @@ class ProductController {
     try {
       ProductMiddleware.validateProductId(product_id);
       await ProductService.deleteProduct(product_id);
-      res.status(200).json({ message: "Product deleted successfully" });
+      res.status(200).json({ message: "Product deleted successfully", success: true });
     } catch (error) {
       next(error);
     }
@@ -67,7 +69,7 @@ class ProductController {
       if (!product) {
         return next(new ResponseError(404, "Product not found"));
       }
-      res.status(200).json({ data: product });
+      res.status(200).json({ data: product, success: true });
     } catch (error) {
       next(error);
     }

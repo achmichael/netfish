@@ -26,6 +26,7 @@ model User {
   cartItems            CartItem[]
   verificationTokens VerificationToken[]
   resetPasswordTokens ResetPasswordToken[]
+  orders              Order[]
   googleAccounts        GoogleAccount?
 }
 
@@ -105,6 +106,7 @@ model Product {
   retailOrders  RetailOrder[]
   preOrders     PreOrder[]
   cartItems     CartItem[]
+  orders    Order[]
 }
 
 model Partnership {
@@ -138,6 +140,32 @@ model ResetPasswordToken {
   user         User     @relation(fields: [userId], references: [id])
   createdAt    DateTime @default(now())
 }
+
+model Order {
+  id             Int          @id @default(autoincrement())
+  userId         Int
+  productId      Int
+  quantity       Int          // Jumlah produk yang dipesan, dalam satuan unit
+  totalPrice     Float
+  orderStatus    OrderStatus  @default(PENDING) // Status order
+  orderDate      DateTime     @default(now())  // Tanggal pesanan dibuat
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  // Relasi
+  user     User    @relation(fields: [userId], references: [id])
+  product  Product @relation(fields: [productId], references: [id])
+}
+
+
+enum OrderStatus {
+  PENDING      // Pesanan belum diproses
+  CONFIRMED    // Pesanan sudah dikonfirmasi
+  SHIPPED      // Pesanan sudah dikirim
+  DELIVERED    // Pesanan sudah diterima
+  CANCELED     // Pesanan dibatalkan
+}
+
 
 enum Role {
   CONSUMER

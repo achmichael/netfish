@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import logo from '../assets/new-logo.png';
 const SplashScreen = ({ onAnimationComplete }) => {
-
     useEffect(() => {
         const timer = setTimeout(() => {
             onAnimationComplete();

@@ -14,7 +14,10 @@ const Form = ({
   isLogin = false,
   onGoogleSuccess,
   onGoogleError,
+  isEdit = false,
+  initialData = {},
 }) => {
+  
   const navigate = useNavigate();
 
   const [data, setData] = useState(
@@ -29,6 +32,7 @@ const Form = ({
           password: "",
           rePassword: "",
           role: "",
+          ...initialData,
         }
   );
 
@@ -65,17 +69,31 @@ const Form = ({
   const [isFormValid, setIsFormValid] = useState(false);
 
   useEffect(() => {
-    const requiredFields = isLogin ? ['email', 'password'] : ['name', 'email', 'password', 'rePassword', 'role'];
+    const requiredFields = isLogin
+      ? ["email", "password"]
+      : [
+          "name",
+          "email",
+          ...(isEdit ? [] : ["password", "rePassword"]),
+          "role",
+        ];
+
     const allFieldsFilled = requiredFields.every(
-      (field) => data[field].trim() !== ""
+      (field) => data[field]?.trim() !== ""
     );
-    
+
     const noErrors = requiredFields.every(
-      (field) => errors[field].trim() === ""
+      (field) => errors[field]?.trim() === ""
     );
 
     setIsFormValid(allFieldsFilled && noErrors);
   }, [data, errors, isLogin]);
+
+  useEffect(() => {
+    if (initialData && isEdit) {
+      setData(initialData);
+    }
+  }, [initialData, isEdit]); // Update form data when initialData changes or edit mode is enabled
 
   const handleInputChange = (name, value) => {
     setData({ ...data, [name]: value });
@@ -122,13 +140,13 @@ const Form = ({
         break;
       case "role":
         if (!["CONSUMER", "PARTNER", "ADMIN"].includes(value)) {
-          error = "Role tidak valid. Pilihan yang tersedia: CONSUMER, PARTNER, ADMIN";
+          error =
+            "Role tidak valid. Pilihan yang tersedia: CONSUMER, PARTNER, ADMIN";
         }
         break;
       default:
         break;
     }
-    
     setErrors({ ...errors, [name]: error });
   };
 
@@ -137,18 +155,25 @@ const Form = ({
   const onSubmit = (e) => {
     e.preventDefault();
 
-    const requiredFields = isLogin ? ['email', 'password'] : ['name', 'email', 'password', 'rePassword', 'role'];
-    const hasErrors = requiredFields.some(field => errors[field] !== '');
-    
+    const requiredFields = isLogin
+      ? ["email", "password"]
+      : [
+          "name",
+          "email",
+          ...(isEdit ? [] : ["password", "rePassword"]),
+          "role",
+        ];
+    const hasErrors = requiredFields.some((field) => errors[field] !== "");
+
     if (!hasErrors) {
       handleSubmit(data);
     } else {
       const errorMessages = requiredFields
-        .filter(field => errors[field] !== "")
-        .map(field => errors[field]);
+        .filter((field) => errors[field] !== "")
+        .map((field) => errors[field]);
 
       const errorMessage = errorMessages.join("<br>");
-      
+
       if (errorMessage) {
         Swal.fire({
           title: "Oopss",
@@ -180,62 +205,76 @@ const Form = ({
               value={data.name}
               touched={touched.name}
               error={errors.name}
-              placeholder={"Masukkan Nama anda disini..."}
+              placeholder={
+                isEdit
+                  ? "Masukkan nama baru anda..."
+                  : "Masukkan Nama anda disini..."
+              }
               onChange={handleInputChange}
             />
           )}
           <InputGroup
             name={"email"}
             icon={<MdOutlineEmail />}
-            placeholder={"Masukkan Email Anda..."}
+            placeholder={
+              isEdit ? "Masukkan Email Baru anda..." : "Masukkan Email Anda..."
+            }
             value={data.email}
             touched={touched.email}
             error={errors.email}
             onChange={handleInputChange}
           />
-          <InputGroup
-            name={"password"}
-            touched={touched.password}
-            icon={<PiLockKeyFill />}
-            placeholder={"Masukkan password anda..."}
-            value={data.password}
-            error={errors.password}
-            onChange={handleInputChange}
-            type="password"
-          />
-          {!isLogin && (
+          {(isLogin || !isEdit) && (
             <>
               <InputGroup
-                name={"rePassword"}
+                name={"password"}
+                touched={touched.password}
                 icon={<PiLockKeyFill />}
-                touched={touched.rePassword}
-                error={errors.rePassword}
-                placeholder={"Masukkan ulang password anda..."}
-                value={data.rePassword}
+                placeholder="Masukkan password anda..."
+                value={data.password}
+                error={errors.password}
                 onChange={handleInputChange}
                 type="password"
               />
-              <SelectGroup
-                name={"role"}
-                value={data.role}
-                touched={touched.role}
-                error={errors.role}
-                onChange={handleInputChange}
-              />
             </>
+          )}
+          {!isLogin && !isEdit && (
+            <InputGroup
+              name={"rePassword"}
+              icon={<PiLockKeyFill />}
+              touched={touched.rePassword}
+              error={errors.rePassword}
+              placeholder="Masukkan ulang password anda..."
+              value={data.rePassword}
+              onChange={handleInputChange}
+              type="password"
+            />
+          )}
+          {(!isLogin || isEdit) && (
+            <SelectGroup
+              name={"role"}
+              value={data.role}
+              touched={touched.role}
+              error={errors.role}
+              onChange={handleInputChange}
+            />
           )}
           <Button
             className={
               "w-full py-2 px-4 bg-gradient-to-b from-primary to-secondary hover:bg-maroon-600 text-white font-bold rounded"
             }
-            label={isLogin ? "Masuk" : "Daftar"}
+            label={isLogin ? "Masuk" : isEdit ? "Update" : "Daftar"}
             disabled={!isFormValid}
           />
           {isLogin && (
             <div className="text-center py-2 px-4">
               <p className="text-black">
                 Anda lupa password?
-                <Link to={'/forgot-password'} target="_blank" className="text-blue-500 font-semibold">
+                <Link
+                  to={"/forgot-password"}
+                  target="_blank"
+                  className="text-blue-500 font-semibold"
+                >
                   {" "}
                   Klik disini
                 </Link>
@@ -251,29 +290,31 @@ const Form = ({
             text={googleButtonText}
           />
         </div>
-        <div className="text-center mt-2">
-          <p>
-            {isLogin ? "Belum punya akun? " : "Sudah punya akun? "}
-            <a
-              href={isLogin ? "/register" : "/auth/login"}
-              className="text-blue-500 font-semibold"
-            >
-              {isLogin ? "Daftar di sini" : "Masuk di sini"}
-            </a>
-          </p>
-          <div className="text-center py-2 px-4">
-            Informasi ini akan disimpan dengan aman sesuai{" "}
-            <a
-              href="https://policies.google.com/"
-              target="_blank"
-              className="text-blue-500"
-            >
-              <p className="font-semibold">
-                Ketentuan Layanan & Kebijakan Privasi
-              </p>
-            </a>
+        {!isEdit && (
+          <div className="text-center mt-2">
+            <p>
+              {isLogin ? "Belum punya akun? " : "Sudah punya akun? "}
+              <a
+                href={isLogin ? "/register" : "/auth/login"}
+                className="text-blue-500 font-semibold"
+              >
+                {isLogin ? "Daftar di sini" : "Masuk di sini"}
+              </a>
+            </p>
+            <div className="text-center py-2 px-4">
+              Informasi ini akan disimpan dengan aman sesuai{" "}
+              <a
+                href="https://policies.google.com/"
+                target="_blank"
+                className="text-blue-500"
+              >
+                <p className="font-semibold">
+                  Ketentuan Layanan & Kebijakan Privasi
+                </p>
+              </a>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </GoogleProvider>
   );
@@ -374,7 +415,9 @@ const SelectGroup = ({ name, value, onChange, error, touched }) => {
 
 const Button = ({ className, label, disabled }) => (
   <button
-    className={`${className} ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+    className={`${className} ${
+      disabled ? "opacity-50 cursor-not-allowed" : ""
+    }`}
     type="submit"
     disabled={disabled}
   >

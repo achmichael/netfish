@@ -6,6 +6,7 @@ class RoleMiddleware
     authorizeRole = (...allowedRoles) => {
         return (req, res, next) => {
           const userRole = req.user.data.role; //mengambil data role dari req.user.data.role yang tersimpan pada payload token jwt
+
           if (!allowedRoles.includes(userRole)) {
             return next(
               new ResponseError(

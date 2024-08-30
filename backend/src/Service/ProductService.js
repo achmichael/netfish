@@ -7,7 +7,7 @@ class ProductService {
   constructor() {
     this.productRepository = new ProductRepository();
   }
-
+S
   async addProduct(product) {
     const {
       name,
@@ -53,14 +53,15 @@ class ProductService {
     const updatedProduct = new Product(
       name,
       description,
-      price,
+      parseFloat(price),
       image,
-      weight,
+      parseFloat(weight),
       catchDate,
       isProcessed,
       processType,
-      stock
+      parseFloat(stock)
     );
+
     return await this.productRepository.updateProduct(
       product_id,
       updatedProduct

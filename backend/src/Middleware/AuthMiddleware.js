@@ -1,9 +1,8 @@
 import ResponseError from "../Config/Error.js";
 import UserRepository from "../Repository/UserRepository.js";
-import crypto from 'crypto';
+import crypto from "crypto";
 
 class AuthMiddleware {
-  
   validateEmail(email) {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
@@ -105,6 +104,47 @@ class AuthMiddleware {
     }
   };
 
+  updateMiddleware = async (req, res, next) => {
+    const { user_id } = req.params;
+
+    const { name, email, role } = req.body;
+
+    if (!user_id) {
+      return next(new ResponseError(400, "User ID is required"));
+    }
+
+    if (!name || !email || !role) {
+      return next(
+        new ResponseError(
+          400,
+          "Missing required fields (name, email, role), please check your data"
+        )
+      );
+    }
+
+    if (
+      !this.clearWhiteSpace(name) ||
+      !this.clearWhiteSpace(email) ||
+      !this.clearWhiteSpace(role)
+    ) {
+      return next(
+        new ResponseError(400, "Data cannot contain only whitespace")
+      );
+    }
+
+    if (!this.validateEmail(email)) {
+      return next(new ResponseError(400, "Invalid email"));
+    }
+
+    const userRepository = new UserRepository();
+    const user = await userRepository.getUserById(user_id);
+    if (!user) {
+      return next(new ResponseError(404, "User not found"));
+    }
+
+    next();
+  };
+  
   loginMiddleware = (req, res, next) => {
     const { email, password } = req.body;
 
@@ -151,7 +191,6 @@ class AuthMiddleware {
 
   resendVerificationCodeMiddleware = (req, res, next) => {
     const { email } = req.body;
-
     if (!email) {
       return next(
         new ResponseError(
